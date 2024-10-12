@@ -1,29 +1,43 @@
 ﻿using iTextSharp.text;
 using PdfDream.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace PdfDream.Tags;
 
 public readonly struct ImgTag(string src, int? alignment, float? width, float? height) : IAutoCloseTag
 {
-    public string TagName { get; } = "Img";
-    public string Src { get; } = src;
-    public int Alignment { get; } = alignment ?? Element.ALIGN_CENTER;
-    public float Width { get; } = width ?? 500f;
-    public float Height { get; } = height ?? 500f;
+	public string TagName { get; } = "Img";
+	public string Src { get; } = src;
+	public int Alignment { get; } = alignment ?? Element.ALIGN_CENTER;
+	public float Width { get; } = width ?? 500f;
+	public float Height { get; } = height ?? 500f;
 
-    public void Render(ref Document doc)
-    {
-        var imgPath = Path.Combine(Directory.GetCurrentDirectory(), Src);
+	public void Render(ref Document doc)
+	{
+		Image img;
 
-        if (!File.Exists(imgPath)) throw new FileNotFoundException($"Image {imgPath} not founded.");
+		if (IsBase64String(Src))
+		{
+			byte[] imageBytes = Convert.FromBase64String(ExtractBase64Data(Src));
+			img = Image.GetInstance(imageBytes);
+		}
+		else
+		{
+			string imagePath = Path.Combine(Directory.GetCurrentDirectory(), Src);
 
-        var img = Image.GetInstance(imgPath);
+			if (!File.Exists(imagePath)) throw new FileNotFoundException($"Imagem {imagePath} não encontrada");
 
-        img.ScaleToFit(Width, Height);
+			img = Image.GetInstance(imagePath);
+		}
 
-        img.Alignment = Alignment;
+		img.ScaleToFit(Width, Height);
+		img.Alignment = Alignment;
 
-        doc.Add(img);
-    }
+		doc.Add(img);
+	}
+
+	private static bool IsBase64String(string src) => src.StartsWith("data:image", StringComparison.OrdinalIgnoreCase);
+
+	private static string ExtractBase64Data(string base64String) => Regex.Replace(base64String, @"^data:image\/[a-zA-Z]+;base64", string.Empty);
 }
 

@@ -7,8 +7,12 @@
 
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/TonyGuerra122/PDFDoc</RepositoryUrl>
+		<RepositoryUrl>https://github.com/TonyGuerra122/PdfDream</RepositoryUrl>
 
+		<PackageId>PdfDream</PackageId>
+		<Version>1.0.2</Version>
+		<Authors>Tony Guerra</Authors>
+		<Description>A Simple lib to export pdf by XML layout</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
