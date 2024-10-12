@@ -13,7 +13,6 @@ internal readonly struct Table(List<Row> content) : INonAutoCloseTag
 	{
 		if (Content.Count == 0) return;
 
-		// Número de colunas baseado na primeira linha
 		int numColumns = Content[0].Content.Count;
 
 		var pdfTable = new PdfPTable(numColumns)
@@ -27,16 +26,12 @@ internal readonly struct Table(List<Row> content) : INonAutoCloseTag
 			{
 				PdfPCell pdfPCell;
 
-				// Verificar se a célula contém uma imagem
 				if (cell.IsImage)
 				{
-					// Carregar a imagem e definir propriedades
-					var img = Image.GetInstance(cell.ImageSrc);
-					img.ScaleToFit(cell.Width ?? 100f, cell.Height ?? 100f);
-					img.Alignment = cell.Alignment;
 
-					// Adicionar a imagem dentro da célula
-					pdfPCell = new PdfPCell(img)
+					var imgTag = new ImgTag(cell.ImageSrc ?? "", cell.Alignment, cell.Width, cell.Height);
+
+					pdfPCell = new PdfPCell(imgTag.RenderToImage())
 					{
 						HorizontalAlignment = cell.Alignment,
 						VerticalAlignment = Element.ALIGN_MIDDLE,
@@ -45,28 +40,24 @@ internal readonly struct Table(List<Row> content) : INonAutoCloseTag
 				}
 				else
 				{
-					// Dividir o conteúdo em linhas separadas por quebra de linha '\n'
 					string[]? lines = cell.Content?.Split('\n', StringSplitOptions.None);
 
-					// Criar um parágrafo para armazenar múltiplas linhas
 					Paragraph paragraph = [];
 
 					foreach (string line in lines ?? [])
 					{
 						paragraph.Add(new Phrase(line));
-						paragraph.Add(Chunk.Newline);  // Adicionar uma nova linha entre parágrafos
+						paragraph.Add(Chunk.Newline);
 					}
 
-					// Criar a célula e adicionar o parágrafo
 					pdfPCell = new PdfPCell(paragraph)
 					{
-						HorizontalAlignment = cell.Alignment, // Alinhar o conteúdo
+						HorizontalAlignment = cell.Alignment,
 						VerticalAlignment = Element.ALIGN_CENTER,
 						Padding = 5
 					};
 				}
 
-				// Definir cor de fundo, se presente
 				if (row.Color != null)
 				{
 					pdfPCell.BackgroundColor = row.Color;
@@ -76,7 +67,6 @@ internal readonly struct Table(List<Row> content) : INonAutoCloseTag
 			}
 		}
 
-		// Adicionar a tabela ao documento
 		doc.Add(pdfTable);
 	}
 }

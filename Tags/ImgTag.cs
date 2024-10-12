@@ -36,9 +36,47 @@ public readonly partial struct ImgTag(string src, int? alignment, float? width, 
 		doc.Add(img);
 	}
 
-	private static bool IsBase64String(string src) => src.StartsWith("data:image", StringComparison.OrdinalIgnoreCase);
+	public Image RenderToImage()
+	{
+		Image img;
 
-	private static string ExtractBase64Data(string base64String) => Base64Regex().Replace(base64String, string.Empty);
+		if (IsBase64String(Src))
+		{
+			byte[] imageBytes = Convert.FromBase64String(ExtractBase64Data(Src));
+			img = Image.GetInstance(imageBytes);
+		}
+		else
+		{
+			string imagePath = Path.Combine(Directory.GetCurrentDirectory(), Src);
+
+			if (!File.Exists(imagePath)) throw new FileNotFoundException($"Imagem {imagePath} não encontrada");
+
+			img = Image.GetInstance(imagePath);
+		}
+
+		img.ScaleToFit(Width, Height);
+		img.Alignment = Alignment;
+
+		return img;
+	}
+
+
+	private static bool IsBase64String(string src) => src.Contains("data:image", StringComparison.OrdinalIgnoreCase);
+
+	private static string ExtractBase64Data(string base64String)
+	{
+		int index = base64String.IndexOf("data:image");
+
+		if (index != -1)
+		{
+			string fileBase64 = base64String[index..];
+
+			return Base64Regex().Replace(fileBase64, string.Empty); ;
+		}
+
+		throw new ArgumentException("Prefixo 'data:image' não encontrado na string Base64.");
+	}
+
 	[GeneratedRegex(@"^data:image\/[a-zA-Z]+;base64,")]
 	private static partial Regex Base64Regex();
 }

@@ -9,7 +9,7 @@ internal readonly struct Row(List<Cell> content, BaseColor? backgroundColor = nu
     public readonly List<Cell> Content { get; } = content;
     public readonly BaseColor? Color { get; } = backgroundColor;
 
-    public void Render(ref iTextSharp.text.Document doc)
+    public void Render(ref Document doc)
     {
         throw new NotImplementedException();
     }
