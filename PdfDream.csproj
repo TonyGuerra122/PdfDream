@@ -10,7 +10,7 @@
 		<RepositoryUrl>https://github.com/TonyGuerra122/PdfDream</RepositoryUrl>
 
 		<PackageId>PdfDream</PackageId>
-		<Version>1.0.3</Version>
+		<Version>1.0.4</Version>
 		<Authors>Tony Guerra</Authors>
 		<Description>A Simple lib to export pdf by XML layout</Description>
 	</PropertyGroup>
