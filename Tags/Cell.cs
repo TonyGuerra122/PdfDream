@@ -1,10 +1,11 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
 using PdfDream.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace PdfDream.Tags;
 
-internal readonly struct Cell : INonAutoCloseTag
+internal readonly partial struct Cell : INonAutoCloseTag
 {
 	public string? Content { get; }  // Para texto
 	public string? ImageSrc { get; } // Para imagens
@@ -41,15 +42,27 @@ internal readonly struct Cell : INonAutoCloseTag
 	{
 		if (IsImage)
 		{
-			// Renderizar imagem
 			if (ImageSrc != null)
 			{
-				Image img = Image.GetInstance(ImageSrc);
+				Image img;
+
+				if (IsBase64String(ImageSrc))
+				{
+					byte[] imageBytes = Convert.FromBase64String(ExtractBase64Data(ImageSrc));
+					img = Image.GetInstance(imageBytes);
+				}
+				else
+				{
+					img = Image.GetInstance(ImageSrc);
+				}
+
 				if (Width.HasValue && Height.HasValue)
 				{
 					img.ScaleToFit(Width.Value, Height.Value);
 				}
+
 				img.Alignment = Alignment;
+
 				doc.Add(img);
 			}
 		}
@@ -61,7 +74,7 @@ internal readonly struct Cell : INonAutoCloseTag
 				{
 					HorizontalAlignment = Alignment,
 					VerticalAlignment = Element.ALIGN_MIDDLE,
-					Border = PdfPCell.NO_BORDER // Sem borda
+					Border = PdfPCell.NO_BORDER
 				};
 
 				string[] lines = Content.Split(separator, StringSplitOptions.None);
@@ -78,4 +91,10 @@ internal readonly struct Cell : INonAutoCloseTag
 			}
 		}
 	}
+
+	private static bool IsBase64String(string src) => src.StartsWith("data:image", StringComparison.OrdinalIgnoreCase);
+
+	private static string ExtractBase64Data(string base64String) => Base64Regex().Replace(base64String, string.Empty);
+	[GeneratedRegex(@"^data:image\/[a-zA-Z]+;base64,")]
+	private static partial Regex Base64Regex();
 }

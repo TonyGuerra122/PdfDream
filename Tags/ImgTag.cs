@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace PdfDream.Tags;
 
-public readonly struct ImgTag(string src, int? alignment, float? width, float? height) : IAutoCloseTag
+public readonly partial struct ImgTag(string src, int? alignment, float? width, float? height) : IAutoCloseTag
 {
 	public string TagName { get; } = "Img";
 	public string Src { get; } = src;
@@ -38,6 +38,8 @@ public readonly struct ImgTag(string src, int? alignment, float? width, float? h
 
 	private static bool IsBase64String(string src) => src.StartsWith("data:image", StringComparison.OrdinalIgnoreCase);
 
-	private static string ExtractBase64Data(string base64String) => Regex.Replace(base64String, @"^data:image\/[a-zA-Z]+;base64", string.Empty);
+	private static string ExtractBase64Data(string base64String) => Base64Regex().Replace(base64String, string.Empty);
+	[GeneratedRegex(@"^data:image\/[a-zA-Z]+;base64,")]
+	private static partial Regex Base64Regex();
 }
 
